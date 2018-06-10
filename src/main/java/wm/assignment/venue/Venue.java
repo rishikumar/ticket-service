@@ -1,14 +1,14 @@
 package wm.assignment.venue;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Venue {
     private List<Row> rows;
-    private Map<Integer, SeatHold> heldReservations = new HashMap<>();
+    private Map<Integer, SeatHold> heldReservations = new ConcurrentHashMap<>();
 
     public Venue(int numRows, int numColumns) {
         // create all the rows, each initialized with numColumn seats

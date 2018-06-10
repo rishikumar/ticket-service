@@ -4,10 +4,10 @@ package wm.assignment.venue;
 import org.junit.jupiter.api.Test;
 import wm.assignment.exception.VenueException;
 
-import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class RowTest {
     @Test
@@ -30,16 +30,22 @@ class RowTest {
         SeatHold hold = r.holdSeats(availableBlock, 10, "a@a.com");
         List<SeatBlock> blocks = r.getBlocks();
 
-        assertEquals(10, blocks.get(0).getNumSeats());
-        assertEquals(40, blocks.get(1).getNumSeats());
+        assertBlock(blocks.get(0), 10, 0);
+        assertBlock(blocks.get(1), 40, 10);
 
         availableBlock = r.getBlocks().get(1);
         hold = r.holdSeats(availableBlock, 20, "b@b.com");
         blocks = r.getBlocks();
 
-        assertEquals(10, blocks.get(0).getNumSeats());
-        assertEquals(20, blocks.get(1).getNumSeats());
-        assertEquals(20, blocks.get(2).getNumSeats());
+        assertBlock(blocks.get(0), 10, 0);
+        assertBlock(blocks.get(1), 20, 10);
+        assertBlock(blocks.get(2), 20, 30);
 
     }
+
+    private void assertBlock(SeatBlock block, int numSeats, int startPosition) {
+        assertEquals(numSeats, block.getNumSeats());
+        assertEquals(startPosition, block.getStartPosition());
+    }
+
 }
