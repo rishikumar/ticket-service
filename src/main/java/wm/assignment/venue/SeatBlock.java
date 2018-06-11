@@ -17,6 +17,10 @@ public class SeatBlock {
         return this.blockType;
     }
 
+    public void setBlockType(SeatBlockType blockType) {
+        this.blockType = blockType;
+    }
+
     public int getRowNum() {
         return this.rowNum;
     }
@@ -27,5 +31,9 @@ public class SeatBlock {
 
     public int getNumSeats() {
         return this.numSeats;
+    }
+
+    public void setNumSeats(int numSeats) {
+        this.numSeats = numSeats;
     }
 }

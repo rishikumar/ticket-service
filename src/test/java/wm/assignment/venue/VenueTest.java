@@ -59,6 +59,11 @@ class VenueTest {
     }
 
     @Test
+    void testHoldExpiration() {
+
+    }
+
+    @Test
     void testSuccessfulConfirmation() {
 
     }

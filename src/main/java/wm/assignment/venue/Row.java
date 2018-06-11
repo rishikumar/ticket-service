@@ -1,10 +1,12 @@
 package wm.assignment.venue;
 
+import org.apache.commons.lang3.tuple.Pair;
 import wm.assignment.exception.VenueException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -23,7 +25,7 @@ class Row {
         blocks.add(new SeatBlock(SeatBlockType.UNRESERVED, rowNum, 0, numSeats));
     }
 
-    public List<SeatBlock> getBlocks() {
+    List<SeatBlock> getBlocks() {
         return blocks;
     }
 
@@ -43,6 +45,7 @@ class Row {
     }
 
     synchronized SeatHold holdSeats(SeatBlock block, int numSeats, String customerEmail) {
+        // TODO: update this logic to be side effect free
         // sanity check
         if (block.getNumSeats() < numSeats) {
             throw new VenueException("Cannot reserve seats - not enough are available in the block");
@@ -70,6 +73,40 @@ class Row {
         }
 
         return new SeatHold(holdBlock, customerEmail);
+    }
+
+    synchronized void mergeBlocks() {
+        // TODO: update this logic to be side effect free
+
+        int i = 0;
+
+        SeatBlock currentUnreservedBlock = null;
+
+        while (i < blocks.size()) {
+            SeatBlock sb = blocks.get(i);
+            // case 1: if we find a block that isn't unreserved, we no longer have a contiguous unreserved block
+            if (sb.getBlockType() != SeatBlockType.UNRESERVED) {
+                currentUnreservedBlock = null;
+                i++;
+                continue;
+            }
+
+            // case 2: here we've found an unreserved block - this block will be come the current unreserved block
+            if (currentUnreservedBlock == null) {
+                currentUnreservedBlock = sb;
+                i++;
+                continue;
+            }
+
+            // case 3: we have a contiguous unreserved block to merge into the current unreserved block
+            currentUnreservedBlock.setNumSeats(currentUnreservedBlock.getNumSeats() + sb.getNumSeats());
+
+            // TODO: Yikes...bad design
+            blocks.remove(sb);
+            i++;
+        }
+
+
     }
 
 }

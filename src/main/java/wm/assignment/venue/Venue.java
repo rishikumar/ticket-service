@@ -19,7 +19,7 @@ public class Venue {
         this.heldReservations = new TTLMap<>(ttlInMillis);
     }
 
-    public List<Row> getRows() {
+    List<Row> getRows() {
         return rows;
     }
 
@@ -50,7 +50,17 @@ public class Venue {
         Row firstAvailableRow = rows.get(firstAvailableBlock.getRowNum());
 
         SeatHold hold = firstAvailableRow.holdSeats(firstAvailableBlock, numSeats, customerEmail);
-        heldReservations.put(hold.getId(), hold);
+        heldReservations.put(hold.getId(), hold, this::handleExpiredHold);
         return hold;
     }
+
+    private void handleExpiredHold(SeatHold expiredHold) {
+        // update the reserved block type to be unreserved
+        SeatBlock block = expiredHold.getBlock();
+        block.setBlockType(SeatBlockType.UNRESERVED);
+
+        // ask the row to merge contiguous unreserved seat blocks
+        rows.get(block.getRowNum()).mergeBlocks();
+    }
+
 }

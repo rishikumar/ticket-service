@@ -1,5 +1,8 @@
 package wm.assignment.util;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.AbstractMap;
@@ -17,6 +20,7 @@ import java.util.stream.Collectors;
 
 
 public class TTLMap<K, V> extends AbstractMap<K, V> {
+    private final static Log log = LogFactory.getLog(TTLMap.class);
 
     private class ValueWrapper {
         V value;
@@ -83,12 +87,15 @@ public class TTLMap<K, V> extends AbstractMap<K, V> {
 
         Runnable expireLoop = () -> {
             lock.lock();
+            log.debug("Invoking expireLoop() in TTLMap...");
 
             try {
                 List<K> expiredKeys = map.entrySet().stream()
                     .filter(isExpired)
                     .map(Entry::getKey)
                     .collect(Collectors.toList());
+
+                log.debug("Number of keys to expire: " + expiredKeys.size());
 
                 expiredKeys.stream().map(map::get).forEach((v) -> {
                     if (v.notifier != null) {
