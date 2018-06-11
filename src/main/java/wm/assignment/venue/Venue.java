@@ -1,14 +1,19 @@
 package wm.assignment.venue;
 
+import wm.assignment.exception.VenueException;
 import wm.assignment.util.TTLMap;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Venue {
     private List<Row> rows;
-    private TTLMap<Integer, SeatHold> heldReservations;
+    private TTLMap<Integer, SeatHold> heldSeats;
+    private Map<String, SeatBlock> reservedSeats;
 
     public Venue(int numRows, int numColumns, long ttlInMillis) {
         // create all the rows, each initialized with numColumn seats
@@ -16,7 +21,8 @@ public class Venue {
             .mapToObj((rowNum) -> new Row(rowNum, numColumns))
             .collect(Collectors.toList());
 
-        this.heldReservations = new TTLMap<>(ttlInMillis);
+        this.heldSeats = new TTLMap<>(ttlInMillis);
+        this.reservedSeats = new ConcurrentHashMap<>();
     }
 
     /**
@@ -54,18 +60,56 @@ public class Venue {
         Row firstAvailableRow = rows.get(firstAvailableBlock.getRowNum());
         Row.HoldUpdate holdUpdate = firstAvailableRow.holdSeats(firstAvailableBlock, numSeats, customerEmail);
 
-        // replace the current row with the new one and save the hold to the hold map
-        rows.set(holdUpdate.row.getRowNum(), holdUpdate.row);
-        heldReservations.put(holdUpdate.hold.getId(), holdUpdate.hold, this::handleExpiredHold);
+        Row row = holdUpdate.row;
+        SeatHold hold = holdUpdate.hold;
 
-        return holdUpdate.hold;
+        // replace the current row with the new one and save the hold to the hold map
+        rows.set(row.getRowNum(), row);
+        heldSeats.put(hold.getId(), hold, this::handleExpiredHold);
+
+        return hold;
     }
+
+    public synchronized String reserveSeats(int seatHoldId, String customerEmail) {
+        SeatHold hold = heldSeats.get(seatHoldId);
+
+        if (hold == null) {
+            // seatHoldId couldn't be find - might have expired or the client passed a bad seatHoldId
+            return null;
+        }
+
+        if (!hold.getCustomerEmail().equals(customerEmail)) {
+            throw new VenueException("Email mismatch when attempting to reserve a held reservation");
+        }
+
+        String confirmId = UUID.randomUUID().toString();
+
+        // move the reservation to the reserved map
+        heldSeats.remove(seatHoldId);
+        SeatBlock reservedBlock = getReservedBlock(hold.getBlock());
+        reservedSeats.put(confirmId, reservedBlock);
+
+        return confirmId;
+    }
+
+    public SeatBlock findReservation(String confirmId) {
+        return reservedSeats.get(confirmId);
+    }
+
 
     private void handleExpiredHold(SeatHold expiredHold) {
         Row existingRow = rows.get(expiredHold.getBlock().getRowNum());
-
         Row newRow = existingRow.withBlockUnreserved(expiredHold.getBlock());
         rows.set(existingRow.getRowNum(), newRow);
+    }
+
+    private SeatBlock getReservedBlock(SeatBlock heldBlock) {
+        Row exitingRow = rows.get(heldBlock.getRowNum());
+        int blockIndex = exitingRow.getBlocks().indexOf(heldBlock);
+
+        Row newRow = exitingRow.withBlockReserved(heldBlock);
+        rows.set(exitingRow.getRowNum(), newRow);
+        return newRow.getBlocks().get(blockIndex);
     }
 
 }

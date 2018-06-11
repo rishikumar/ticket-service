@@ -41,7 +41,7 @@ public class SimpleTicketService implements TicketService {
      * @return a reservation confirmation code
      */
     public String reserveSeats(int seatHoldId, String customerEmail) {
-        throw new UnsupportedOperationException();
+        return venue.reserveSeats(seatHoldId, customerEmail);
     }
 
 }

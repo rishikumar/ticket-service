@@ -1,6 +1,7 @@
 package wm.assignment.venue;
 
 import org.junit.jupiter.api.Test;
+import wm.assignment.exception.VenueException;
 
 import java.util.List;
 
@@ -53,19 +54,46 @@ class VenueTest {
     }
 
     @Test
-    void testHoldExpiration() {
-
-    }
-
-    @Test
     void testSuccessfulConfirmation() {
+        Venue v = new Venue(2, 10, 10000);
 
+        SeatHold hold = v.findAndHoldSeats(8, "a@a.com");
+        String confirmId = v.reserveSeats(hold.getId(), "a@a.com");
+        assertNotNull(confirmId);
+
+        SeatBlock reservedBlock = v.findReservation(confirmId);
+        assertBlock(reservedBlock, SeatBlockType.RESERVED, 0, 0, 8);
     }
 
     @Test
     void testFailedConfirmation() {
+        Venue v = new Venue(2, 10, 10000);
 
+        // an invalid reservation
+        assertNull(v.reserveSeats(1111, "a@a.com"));
+
+        // mismatch on email
+        SeatHold hold = v.findAndHoldSeats(8, "a@a.com");
+        assertThrows(VenueException.class, () -> v.reserveSeats(hold.getId(), "b@b.com"));
     }
 
+    @Test
+    void testExpiredHold() {
+        Venue v = new Venue(2, 10, 1);
 
+        SeatHold hold = v.findAndHoldSeats(8, "a@a.com");
+
+        // TODO:
+        // let the cache expire - yes, I know this isn't the best way to test the cache invalidation...
+        // a better approach would be to mock the behavior of the expiration thread to expire the entry on demand
+        // instead of relying on timing logic
+        try {
+            Thread.sleep(5);
+        }
+        catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        assertNull(v.reserveSeats(hold.getId(), "a@a.com"));
+    }
 }

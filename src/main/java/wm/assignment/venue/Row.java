@@ -110,13 +110,24 @@ class Row {
 
     Row withBlockUnreserved(SeatBlock blockToReplace) {
         SeatBlock newUnreservedBlock = new SeatBlock(SeatBlockType.UNRESERVED,
-            blockToReplace.getRowNum(), blockToReplace.getStartPosition(), blockToReplace.getStartPosition());
+            blockToReplace.getRowNum(), blockToReplace.getStartPosition(), blockToReplace.getNumSeats());
 
         int blockIndex = blocks.indexOf(blockToReplace);
         List<SeatBlock> newBlocks = new ArrayList<>(blocks);
         newBlocks.set(blockIndex, newUnreservedBlock);
 
         return withBlocksMerged(rowNum, numSeats, newBlocks);
+    }
+
+    Row withBlockReserved(SeatBlock heldBlock) {
+        SeatBlock newReservedBlock = new SeatBlock(SeatBlockType.RESERVED,
+            heldBlock.getRowNum(), heldBlock.getStartPosition(), heldBlock.getNumSeats());
+
+        int blockIndex = blocks.indexOf(heldBlock);
+        List<SeatBlock> newBlocks = new ArrayList<>(blocks);
+        newBlocks.set(blockIndex, newReservedBlock);
+
+        return new Row(rowNum, numSeats, newBlocks);
     }
 
     private static Row withBlocksMerged(int rowNum, int numSeats, List<SeatBlock> unmergedBlocks) {
