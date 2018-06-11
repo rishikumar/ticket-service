@@ -19,10 +19,6 @@ public class Venue {
         this.heldReservations = new TTLMap<>(ttlInMillis);
     }
 
-    List<Row> getRows() {
-        return rows;
-    }
-
     /**
      * This method computes the number of seats that are current available. This method may return a dirty read of
      * the current state of the venue. This is by design.
@@ -36,6 +32,13 @@ public class Venue {
             .orElse(0);
     }
 
+    List<SeatBlock> findOpenBlocks() {
+        return rows.stream()
+            .flatMap(r -> r.getBlocks().stream())
+            .filter(b -> b.getBlockType() == SeatBlockType.UNRESERVED)
+            .collect(Collectors.toList());
+    }
+
     public synchronized SeatHold findAndHoldSeats(int numSeats, String customerEmail) {
         SeatBlock firstAvailableBlock = rows.stream()
             .flatMap(r -> r.firstAvailableBlock(numSeats))
@@ -47,20 +50,22 @@ public class Venue {
             return null;
         }
 
+        // save the reservation in the first available row
         Row firstAvailableRow = rows.get(firstAvailableBlock.getRowNum());
+        Row.HoldUpdate holdUpdate = firstAvailableRow.holdSeats(firstAvailableBlock, numSeats, customerEmail);
 
-        SeatHold hold = firstAvailableRow.holdSeats(firstAvailableBlock, numSeats, customerEmail);
-        heldReservations.put(hold.getId(), hold, this::handleExpiredHold);
-        return hold;
+        // replace the current row with the new one and save the hold to the hold map
+        rows.set(holdUpdate.row.getRowNum(), holdUpdate.row);
+        heldReservations.put(holdUpdate.hold.getId(), holdUpdate.hold, this::handleExpiredHold);
+
+        return holdUpdate.hold;
     }
 
     private void handleExpiredHold(SeatHold expiredHold) {
-        // update the reserved block type to be unreserved
-        SeatBlock block = expiredHold.getBlock();
-        block.setBlockType(SeatBlockType.UNRESERVED);
+        Row existingRow = rows.get(expiredHold.getBlock().getRowNum());
 
-        // ask the row to merge contiguous unreserved seat blocks
-        rows.get(block.getRowNum()).mergeBlocks();
+        Row newRow = existingRow.withBlockUnreserved(expiredHold.getBlock());
+        rows.set(existingRow.getRowNum(), newRow);
     }
 
 }

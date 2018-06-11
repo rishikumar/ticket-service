@@ -1,14 +1,11 @@
 package wm.assignment.venue;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static wm.assignment.util.TestUtil.assertBlock;
-
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static wm.assignment.util.TestUtil.assertBlock;
 
 class VenueTest {
 
@@ -35,10 +32,7 @@ class VenueTest {
         assertBlock(hold.getBlock(), SeatBlockType.HOLD, 1, 4, 4);
 
         // Confirm that we have two open blocks left - 2 seats in both rows
-        List<SeatBlock> openBlocks = v.getRows().stream()
-            .flatMap(r -> r.getBlocks().stream())
-            .filter(b -> b.getBlockType() == SeatBlockType.UNRESERVED)
-            .collect(Collectors.toList());
+        List<SeatBlock> openBlocks = v.findOpenBlocks();
 
         assertEquals(2, openBlocks.size());
         assertBlock(openBlocks.get(0), SeatBlockType.UNRESERVED, 0, 8, 2);

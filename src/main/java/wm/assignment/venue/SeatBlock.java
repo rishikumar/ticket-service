@@ -17,10 +17,6 @@ public class SeatBlock {
         return this.blockType;
     }
 
-    public void setBlockType(SeatBlockType blockType) {
-        this.blockType = blockType;
-    }
-
     public int getRowNum() {
         return this.rowNum;
     }
@@ -33,7 +29,16 @@ public class SeatBlock {
         return this.numSeats;
     }
 
-    public void setNumSeats(int numSeats) {
-        this.numSeats = numSeats;
+    static SeatBlock merge(SeatBlock sb1, SeatBlock sb2) {
+        if (sb1 == null || sb2 == null) {
+            return null;
+        }
+
+        // sanity checks
+        assert sb1.getBlockType() == sb2.getBlockType();
+        assert sb1.getRowNum() == sb2.getRowNum();
+
+        return new SeatBlock(sb1.blockType, sb1.rowNum, sb1.startPosition, sb1.numSeats + sb2.numSeats);
     }
+
 }

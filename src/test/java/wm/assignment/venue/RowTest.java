@@ -27,15 +27,15 @@ class RowTest {
         Row r = new Row(0, 50);
 
         SeatBlock availableBlock = r.getBlocks().get(0);
-        SeatHold hold = r.holdSeats(availableBlock, 10, "a@a.com");
-        List<SeatBlock> blocks = r.getBlocks();
+        Row.HoldUpdate hu = r.holdSeats(availableBlock, 10, "a@a.com");
+        List<SeatBlock> blocks = hu.row.getBlocks();
 
         assertBlock(blocks.get(0), 10, 0);
         assertBlock(blocks.get(1), 40, 10);
 
-        availableBlock = r.getBlocks().get(1);
-        hold = r.holdSeats(availableBlock, 20, "b@b.com");
-        blocks = r.getBlocks();
+        availableBlock = hu.row.getBlocks().get(1);
+        hu = hu.row.holdSeats(availableBlock, 20, "b@b.com");
+        blocks = hu.row.getBlocks();
 
         assertBlock(blocks.get(0), 10, 0);
         assertBlock(blocks.get(1), 20, 10);
