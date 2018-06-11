@@ -7,8 +7,8 @@ public class SimpleTicketService implements TicketService {
 
     private Venue venue;
 
-    public SimpleTicketService(int numRows, int numColumns) {
-        this.venue = new Venue(numRows, numColumns);
+    public SimpleTicketService(int numRows, int numColumns, long ttlInMillis) {
+        this.venue = new Venue(numRows, numColumns, ttlInMillis);
     }
 
     /**

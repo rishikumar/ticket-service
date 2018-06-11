@@ -1,6 +1,6 @@
 package wm.assignment.venue;
 
-class SeatBlock {
+public class SeatBlock {
     private SeatBlockType blockType;
     private int rowNum;
     private int startPosition;
@@ -13,19 +13,19 @@ class SeatBlock {
         this.numSeats = numSeats;
     }
 
-    SeatBlockType getBlockType() {
+    public SeatBlockType getBlockType() {
         return this.blockType;
     }
 
-    int getRowNum() {
+    public int getRowNum() {
         return this.rowNum;
     }
 
-    int getStartPosition() {
+    public int getStartPosition() {
         return this.startPosition;
     }
 
-    int getNumSeats() {
+    public int getNumSeats() {
         return this.numSeats;
     }
 }

@@ -1,20 +1,26 @@
 package wm.assignment.venue;
 
+import wm.assignment.util.TTLMap;
+
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Venue {
     private List<Row> rows;
-    private Map<Integer, SeatHold> heldReservations = new ConcurrentHashMap<>();
+    private TTLMap<Integer, SeatHold> heldReservations;
 
-    public Venue(int numRows, int numColumns) {
+    public Venue(int numRows, int numColumns, long ttlInMillis) {
         // create all the rows, each initialized with numColumn seats
         rows = IntStream.range(0, numRows)
             .mapToObj((rowNum) -> new Row(rowNum, numColumns))
             .collect(Collectors.toList());
+
+        this.heldReservations = new TTLMap<>(ttlInMillis);
+    }
+
+    public List<Row> getRows() {
+        return rows;
     }
 
     /**
