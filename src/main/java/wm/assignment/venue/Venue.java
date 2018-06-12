@@ -10,6 +10,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Represents a rectangular venue
+ */
 public class Venue {
     private List<Row> rows;
     private TTLMap<Integer, SeatHold> heldSeats;
@@ -26,8 +29,7 @@ public class Venue {
     }
 
     /**
-     * This method computes the number of seats that are current available. This method may return a dirty read of
-     * the current state of the venue. This is by design.
+     * This method computes the number of seats that are current available.
      * @return number of seats
      */
     public int numSeatsAvailable() {
@@ -38,6 +40,11 @@ public class Venue {
             .orElse(0);
     }
 
+    /**
+     * Find all blocks of a given type in any row
+     * @param type the SeatBlockType to query for
+     * @return
+     */
     public List<SeatBlock> findBlocks(SeatBlockType type) {
         return rows.stream()
             .flatMap(r -> r.getBlocks().stream())
@@ -45,6 +52,12 @@ public class Venue {
             .collect(Collectors.toList());
     }
 
+    /**
+     * This method attempts to locate a block of seats and hold them
+     * @param numSeats
+     * @param customerEmail
+     * @return
+     */
     public synchronized SeatHold findAndHoldSeats(int numSeats, String customerEmail) {
         SeatBlock firstAvailableBlock = rows.stream()
             .flatMap(r -> r.firstAvailableBlock(numSeats))
@@ -70,6 +83,10 @@ public class Venue {
         return hold;
     }
 
+    /**
+     * If the held seats are still available (i.e. the hold hasn't expired) this method reserves them
+     * @return
+     */
     public synchronized String reserveSeats(int seatHoldId, String customerEmail) {
         SeatHold hold = heldSeats.get(seatHoldId);
 

@@ -19,9 +19,19 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 
+/**
+ * An implementation of a map in which entries expire after the provided TTL. Also supplies a way for clients to
+ * a handler for expiration notifications
+ * @param <K> Key for the map
+ * @param <V> Value for the map
+ */
 public class TTLMap<K, V> extends AbstractMap<K, V> {
     private final static Log log = LogFactory.getLog(TTLMap.class);
 
+    /**
+     * Internal class used to wrap the value object. Keeps track of the timestamp when it was added to the map as well
+     * as a reference to the notifier method
+     */
     private class ValueWrapper {
         V value;
         LocalDateTime timestamp;
@@ -54,6 +64,11 @@ public class TTLMap<K, V> extends AbstractMap<K, V> {
         startCleanupTask(expirationInterval);
     }
 
+    /**
+     * Produces an entrySet of the key/value Pairs. this is a bit more complicated than asking for the entrySet
+     * directly from the map because the map actually contains K, ValueWrapper(V) pairs.
+     * @return
+     */
     @Override
     public Set<Entry<K, V>> entrySet() {
         return map.entrySet().stream()
@@ -83,6 +98,11 @@ public class TTLMap<K, V> extends AbstractMap<K, V> {
         return value;
     }
 
+    /**
+     * Runs a scheduled task to periodically check for expired entries. If found, send a notification to the
+     * notifier (if supplied) and remove the item from the map
+     * @param expirationInterval
+     */
     private void startCleanupTask(long expirationInterval) {
         Predicate<Entry<K,ValueWrapper>> isExpired = (entry) -> {
             long elapsedTime = ChronoUnit.MILLIS.between(entry.getValue().timestamp, LocalDateTime.now());

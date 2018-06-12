@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-
+/**
+ * Represents a Row in the Venue, which consists of a set of SeatBlock objects
+ */
 class Row {
     class HoldUpdate {
         Row row;
@@ -59,6 +61,10 @@ class Row {
         return blocks;
     }
 
+    /**
+     * Computes the total number of empty seats in this row
+     * @return
+     */
     int totalAvailableSeatCount() {
         return blocks.stream()
             .filter(onlyUnreserved)
@@ -68,12 +74,21 @@ class Row {
 
     }
 
+
+    /**
+     * Finds the first unreserved block in the row that can hold the given number of seats
+     * @param numSeats
+     * @return
+     */
     Stream<SeatBlock> firstAvailableBlock(int numSeats) {
         return blocks.stream()
             .filter(onlyUnreserved)
             .filter(b -> b.getNumSeats() >= numSeats);
     }
 
+    /**
+     * Holds seats from the given seatBlock for the given customerEmail
+     */
     HoldUpdate holdSeats(SeatBlock block, int numSeats, String customerEmail) {
         // sanity check
         if (block.getNumSeats() < numSeats) {

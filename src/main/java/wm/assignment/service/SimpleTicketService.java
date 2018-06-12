@@ -3,6 +3,9 @@ package wm.assignment.service;
 import wm.assignment.venue.SeatHold;
 import wm.assignment.venue.Venue;
 
+/**
+ * Concrete class that implements the TicketService Interface
+ */
 public class SimpleTicketService implements TicketService {
 
     private Venue venue;

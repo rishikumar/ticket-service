@@ -2,6 +2,9 @@ package wm.assignment.service;
 
 import wm.assignment.venue.SeatHold;
 
+/**
+ * Interface defined by the problem statement. Implemented by SimpleTicketService
+ */
 public interface TicketService {
 
     /**

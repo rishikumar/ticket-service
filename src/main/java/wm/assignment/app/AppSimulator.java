@@ -16,12 +16,20 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+/**
+ * This class Simulates multiple clients attempting to hold and reserve seats using the TicketService.
+ * Also provides a command line interface for invoking the simulation.
+ */
 public class AppSimulator {
     private final static Log log = LogFactory.getLog(AppSimulator.class);
 
     private SimpleTicketService ticketService;
     private int numWorkers;
 
+    /**
+     * Constructor that initializes the application
+     * @param cl
+     */
     private AppSimulator(CommandLine cl) {
         int numRows = Integer.parseInt(cl.getOptionValue("rows"));
         int numColumns = Integer.parseInt(cl.getOptionValue("columns"));
@@ -32,6 +40,9 @@ public class AppSimulator {
         ticketService = new SimpleTicketService(numRows, numColumns, ttlInMillis);
     }
 
+    /**
+     * Creates a task to print out statistics about the venue on a periodic basis
+     */
     private void initMonitor() {
         Runnable monitor = () -> {
             Venue venue = ticketService.getVenue();
@@ -50,11 +61,12 @@ public class AppSimulator {
         executor.scheduleWithFixedDelay(monitor, 0, 10, TimeUnit.SECONDS);
     }
 
+    /**
+     * Schedules workers to periodically attempt to hold and reserve reservations.
+     */
     private void initWorkers() {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(numWorkers);
         ExecutorRegistry.register(executor);
-
-        Random r = new Random();
 
         for (int i=0; i < numWorkers; i++) {
             Runnable worker = getWorkerTask();
@@ -63,6 +75,11 @@ public class AppSimulator {
 
     }
 
+    /**
+     * Creates a worker task which attempts to hold a reservation with a random number of seats, waits a random
+     * amount of time and then attempts to confirm the reservation
+     * @return Runnable tha can be scheduled with an ExecutorService
+     */
     private Runnable getWorkerTask() {
         Supplier<String> emailGenerator = () -> UUID.randomUUID().toString() + "@wl.com";
 
@@ -101,6 +118,10 @@ public class AppSimulator {
     }
 
 
+    /**
+     * Main execution loop of the simulator
+     * @param args command line arguments
+     */
     public static void main(String... args) {
         CommandLine cl = parseArgs(args);
 

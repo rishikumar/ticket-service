@@ -1,5 +1,8 @@
 package wm.assignment.venue;
 
+/**
+ * Represents a contiguous set of seats in the row
+ */
 public class SeatBlock {
     private SeatBlockType blockType;
     private int rowNum;
@@ -29,6 +32,9 @@ public class SeatBlock {
         return this.numSeats;
     }
 
+    /**
+     * Merge two seat blocks into a new SeatBlock and return it
+     */
     static SeatBlock merge(SeatBlock sb1, SeatBlock sb2) {
         if (sb1 == null || sb2 == null) {
             return null;
