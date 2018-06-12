@@ -33,7 +33,7 @@ class VenueTest {
         assertBlock(hold.getBlock(), SeatBlockType.HOLD, 1, 4, 4);
 
         // Confirm that we have two open blocks left - 2 seats in both rows
-        List<SeatBlock> openBlocks = v.findOpenBlocks();
+        List<SeatBlock> openBlocks = v.findBlocks(SeatBlockType.UNRESERVED);
 
         assertEquals(2, openBlocks.size());
         assertBlock(openBlocks.get(0), SeatBlockType.UNRESERVED, 0, 8, 2);

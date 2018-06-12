@@ -38,10 +38,10 @@ public class Venue {
             .orElse(0);
     }
 
-    List<SeatBlock> findOpenBlocks() {
+    public List<SeatBlock> findBlocks(SeatBlockType type) {
         return rows.stream()
             .flatMap(r -> r.getBlocks().stream())
-            .filter(b -> b.getBlockType() == SeatBlockType.UNRESERVED)
+            .filter(b -> b.getBlockType() == type)
             .collect(Collectors.toList());
     }
 

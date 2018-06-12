@@ -31,22 +31,26 @@ public class TTLMap<K, V> extends AbstractMap<K, V> {
             this.value = value;
             this.timestamp = LocalDateTime.now();
             this.notifier = notifier;
-
-
         }
     }
 
     private long ttl;
     private Map<K, ValueWrapper> map;
+
+    private ScheduledExecutorService executor;
     private final ReentrantLock lock = new ReentrantLock();
 
     public TTLMap(long ttl) {
-        this(ttl, 5);
+        this(ttl, 5000);
     }
 
-    public TTLMap(long ttl, long expirationInterval) {
+    TTLMap(long ttl, long expirationInterval) {
         this.ttl = ttl;
         this.map = new ConcurrentHashMap<>();
+
+        executor = Executors.newSingleThreadScheduledExecutor();
+        ExecutorRegistry.register(executor);
+
         startCleanupTask(expirationInterval);
     }
 
@@ -109,8 +113,7 @@ public class TTLMap<K, V> extends AbstractMap<K, V> {
             }
         };
 
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        executor.scheduleAtFixedRate(expireLoop, 0, expirationInterval, TimeUnit.MILLISECONDS);
+        executor.scheduleWithFixedDelay(expireLoop, 0, expirationInterval, TimeUnit.MILLISECONDS);
     }
 
 }

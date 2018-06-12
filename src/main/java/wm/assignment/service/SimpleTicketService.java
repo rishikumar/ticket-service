@@ -44,4 +44,8 @@ public class SimpleTicketService implements TicketService {
         return venue.reserveSeats(seatHoldId, customerEmail);
     }
 
+    public Venue getVenue() {
+        return venue;
+    }
+
 }
